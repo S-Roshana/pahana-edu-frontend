@@ -14,6 +14,7 @@ The app interacts with the Spring Boot backend via REST APIs.
 1️⃣ Clone the repository
 
 git clone https://github.com/S-Roshana/pahana-edu-frontend.git
+
 cd pahana-edu-frontend
 
 2️⃣ Install dependencies
@@ -32,5 +33,5 @@ npm start
 Open it automatically in your browser (or you can visit manually)
 
 🌟 Notes
-The frontend is configured to send API requests to your Spring Boot backend (ensure it is running on the appropriate port, typically http://localhost:8080)
+The frontend is configured to send API requests to the Spring Boot backend (ensure it is running on the appropriate port, typically http://localhost:8080)
 
