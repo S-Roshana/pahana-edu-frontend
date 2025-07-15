@@ -90,10 +90,7 @@ function App() {
           element={user ? <Navigate to="/books" replace /> : <LoginPage setUser={setUser} user={user} />}
         />
 
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/books" replace /> : <RegisterPage setUser={setUser} />}
-        />
+<Route path="/register" element={<RegisterPage setUser={setUser} user={user} />} />
 
         <Route
           path="/dashboard"

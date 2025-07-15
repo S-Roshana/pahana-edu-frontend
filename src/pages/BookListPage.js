@@ -30,6 +30,13 @@ import {
   Fab,
   Alert,
   Snackbar,
+  Avatar,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  AppBar,
+  Toolbar,
 } from "@mui/material"
 import {
   Search,
@@ -44,9 +51,12 @@ import {
   Inventory,
   Schedule,
   Delete,
+  Dashboard as DashboardIcon,
+  Edit,
+  Logout,
 } from "@mui/icons-material"
 
-const BookListPage = ({ user }) => {
+const BookListPage = ({ user: propUser, logout }) => {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -59,8 +69,33 @@ const BookListPage = ({ user }) => {
   })
   const [userRatings, setUserRatings] = useState({}) // bookId -> user's rating
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" })
+
+  // Profile menu state
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null)
+  const profileMenuOpen = Boolean(profileAnchorEl)
+
   const navigate = useNavigate()
   const theme = useTheme()
+
+  // Add user state management
+  const [user, setUser] = useState(propUser || null)
+
+  // Load user from localStorage if not passed as prop
+  useEffect(() => {
+    if (!propUser) {
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          const userData = JSON.parse(storedUser)
+          setUser(userData)
+        }
+      } catch (error) {
+        console.error("Error loading user from localStorage:", error)
+      }
+    } else {
+      setUser(propUser)
+    }
+  }, [propUser])
 
   // Configure axios defaults for JWT
   useEffect(() => {
@@ -122,6 +157,34 @@ const BookListPage = ({ user }) => {
       }
     }
     setUserRatings(ratings)
+  }
+
+  // Profile menu handlers
+  const handleProfileMenuOpen = (event) => {
+    setProfileAnchorEl(event.currentTarget)
+  }
+
+  const handleProfileMenuClose = () => {
+    setProfileAnchorEl(null)
+  }
+
+  const handleViewProfile = () => {
+    handleProfileMenuClose()
+    navigate("/dashboard")
+  }
+
+  const handleEditProfile = () => {
+    handleProfileMenuClose()
+    navigate("/profile/edit")
+  }
+
+  const handleLogout = () => {
+    handleProfileMenuClose()
+    if (logout) {
+      logout()
+    }
+    showNotification("Logged out successfully!", "success")
+    navigate("/")
   }
 
   const filteredBooks = books.filter(
@@ -257,12 +320,156 @@ const BookListPage = ({ user }) => {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      {/* Top Navigation Bar with Profile */}
+      {user && (
+        <AppBar
+          position="sticky"
+          elevation={0}
+          sx={{
+            bgcolor: alpha(theme.palette.primary.main, 0.95),
+            backdropFilter: "blur(10px)",
+            borderBottom: `1px solid ${alpha("#fff", 0.1)}`,
+          }}
+        >
+          <Toolbar sx={{ justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <School sx={{ color: "white" }} />
+              <Typography variant="h6" sx={{ color: "white", fontWeight: "bold" }}>
+                Pahana Edu
+              </Typography>
+            </Box>
+
+            {/* Profile Section */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                <Typography variant="body2" sx={{ color: alpha("#fff", 0.9) }}>
+                  Welcome back,
+                </Typography>
+                <Typography variant="body1" sx={{ color: "white", fontWeight: "bold" }}>
+                  {user.customer?.name || user.customer?.username}
+                </Typography>
+              </Box>
+
+              <Tooltip title="Profile Menu">
+                <IconButton
+                  onClick={handleProfileMenuOpen}
+                  sx={{
+                    bgcolor: alpha("#fff", 0.1),
+                    "&:hover": { bgcolor: alpha("#fff", 0.2) },
+                  }}
+                >
+                  <Avatar
+                    src={user.customer?.profilePicUrl}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: alpha("#fff", 0.2),
+                      color: "white",
+                    }}
+                  >
+                    {user.customer?.name?.charAt(0) || user.customer?.username?.charAt(0) || "U"}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+
+              {/* Profile Menu */}
+              <Menu
+                anchorEl={profileAnchorEl}
+                open={profileMenuOpen}
+                onClose={handleProfileMenuClose}
+                onClick={handleProfileMenuClose}
+                PaperProps={{
+                  elevation: 8,
+                  sx: {
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    minWidth: 200,
+                    borderRadius: 2,
+                    "&:before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
+                  },
+                }}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                {/* Profile Header */}
+                <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Avatar src={user.customer?.profilePicUrl} sx={{ width: 32, height: 32 }}>
+                      {user.customer?.name?.charAt(0) || user.customer?.username?.charAt(0) || "U"}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                        {user.customer?.name || user.customer?.username}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {user.customer?.contactNo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {/* Menu Items */}
+                <MenuItem onClick={handleViewProfile} sx={{ py: 1.5 }}>
+                  <ListItemIcon>
+                    <DashboardIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography variant="body2">Dashboard</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      View orders & profile
+                    </Typography>
+                  </ListItemText>
+                </MenuItem>
+
+                <MenuItem onClick={handleEditProfile} sx={{ py: 1.5 }}>
+                  <ListItemIcon>
+                    <Edit fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography variant="body2">Edit Profile</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Update your information
+                    </Typography>
+                  </ListItemText>
+                </MenuItem>
+
+                <Divider />
+
+                <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: "error.main" }}>
+                  <ListItemIcon>
+                    <Logout fontSize="small" sx={{ color: "error.main" }} />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography variant="body2">Logout</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Sign out of your account
+                    </Typography>
+                  </ListItemText>
+                </MenuItem>
+              </Menu>
+            </Box>
+          </Toolbar>
+        </AppBar>
+      )}
+
       {/* Hero Section */}
       <Box
         sx={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "white",
-          py: 8,
+          py: user ? 6 : 8, // Smaller padding if user is logged in (nav bar takes space)
           position: "relative",
           overflow: "hidden",
           "&::before": {
@@ -320,20 +527,6 @@ const BookListPage = ({ user }) => {
                 Handpicked educational books for every learner. Fast delivery guaranteed!
               </Typography>
 
-              {/* User Welcome Message */}
-              {user && (
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: 3,
-                    color: alpha("#fff", 0.9),
-                    fontStyle: "italic",
-                  }}
-                >
-                  Welcome back, {user.customer?.username || user.customer?.name}! 👋
-                </Typography>
-              )}
-
               {/* Search Bar */}
               <Paper
                 elevation={3}
@@ -343,6 +536,7 @@ const BookListPage = ({ user }) => {
                   p: 1,
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "space-between",
                   bgcolor: alpha("#fff", 0.95),
                   backdropFilter: "blur(10px)",
                   borderRadius: 3,
@@ -363,13 +557,14 @@ const BookListPage = ({ user }) => {
                   }}
                   variant="standard"
                   sx={{
+                    flex: 1,
                     "& .MuiInputBase-input": {
                       fontSize: "1.1rem",
                       py: 1.5,
                     },
                   }}
                 />
-                <IconButton color="primary" sx={{ p: 1.5 }}>
+                <IconButton color="primary" sx={{ p: 1.5, flexShrink: 0 }}>
                   <FilterList />
                 </IconButton>
               </Paper>
@@ -391,6 +586,9 @@ const BookListPage = ({ user }) => {
                 border: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                 borderRadius: 3,
                 height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
                 transition: "all 0.3s ease",
                 "&:hover": {
                   transform: "translateY(-5px)",
@@ -418,6 +616,9 @@ const BookListPage = ({ user }) => {
                 border: `2px solid ${alpha(theme.palette.success.main, 0.1)}`,
                 borderRadius: 3,
                 height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
                 transition: "all 0.3s ease",
                 "&:hover": {
                   transform: "translateY(-5px)",
@@ -445,6 +646,9 @@ const BookListPage = ({ user }) => {
                 border: `2px solid ${alpha(theme.palette.warning.main, 0.1)}`,
                 borderRadius: 3,
                 height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
                 transition: "all 0.3s ease",
                 "&:hover": {
                   transform: "translateY(-5px)",
@@ -472,6 +676,9 @@ const BookListPage = ({ user }) => {
                 border: `2px solid ${alpha(theme.palette.secondary.main, 0.1)}`,
                 borderRadius: 3,
                 height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
                 transition: "all 0.3s ease",
                 "&:hover": {
                   transform: "translateY(-5px)",
@@ -493,8 +700,8 @@ const BookListPage = ({ user }) => {
 
       {/* Books Section */}
       <Container sx={{ pb: 8 }}>
-        <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Box>
+        <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 2 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
               Featured Books
             </Typography>
@@ -503,7 +710,7 @@ const BookListPage = ({ user }) => {
               {searchTerm && ` for "${searchTerm}"`}
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexShrink: 0 }}>
             {!user && (
               <Button variant="outlined" color="primary" onClick={() => navigate("/login")} sx={{ fontWeight: "bold" }}>
                 Login to Rate Books
@@ -520,7 +727,7 @@ const BookListPage = ({ user }) => {
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          <Grid container spacing={3} justifyContent="flex-start">
+          <Grid container spacing={4}>
             {filteredBooks.map((book, index) => {
               const stockStatus = getStockStatus(book)
               const deliveryTime = getDeliveryTime(book)
@@ -529,13 +736,14 @@ const BookListPage = ({ user }) => {
               const userRating = userRatings[book.id] || 0
 
               return (
-                <Grid item key={book.id} xs={12} sm={6} md={4}>
+                <Grid item xs={12} sm={6} md={4} lg={3} key={book.id} sx={{ display: "flex" }}>
                   <Grow in timeout={800 + index * 100}>
                     <Card
                       sx={{
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
+                        justifyContent: "space-between",
                         borderRadius: 3,
                         overflow: "hidden",
                         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -584,12 +792,14 @@ const BookListPage = ({ user }) => {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            gap: 1,
                             opacity: 0,
                             transition: "opacity 0.3s ease",
+                            zIndex: 1,
                           }}
                         >
                           <IconButton
-                            sx={{ color: "white", bgcolor: alpha("#fff", 0.2), mr: 1 }}
+                            sx={{ color: "white", bgcolor: alpha("#fff", 0.2) }}
                             onClick={() => navigate(`/book/${book.id}`)}
                           >
                             <Visibility />
@@ -611,6 +821,7 @@ const BookListPage = ({ user }) => {
                             display: "flex",
                             flexDirection: "column",
                             gap: 1,
+                            zIndex: 2,
                           }}
                         >
                           {discountPercent > 0 && (
@@ -638,7 +849,7 @@ const BookListPage = ({ user }) => {
                         </Box>
                       </Box>
 
-                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                      <CardContent sx={{ flexGrow: 1, p: 3, display: "flex", flexDirection: "column" }}>
                         <Tooltip title={book.title} arrow placement="top">
                           <Typography
                             variant="h6"
@@ -669,6 +880,7 @@ const BookListPage = ({ user }) => {
                             overflow: "hidden",
                             lineHeight: 1.5,
                             minHeight: "2.5em",
+                            flexGrow: 1,
                           }}
                         >
                           {book.description}
@@ -752,6 +964,7 @@ const BookListPage = ({ user }) => {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "space-between",
+                            mt: "auto",
                           }}
                         >
                           <Box>
@@ -857,7 +1070,7 @@ const BookListPage = ({ user }) => {
         }}
       >
         <Container>
-          <Grid container spacing={4} alignItems="center">
+          <Grid container spacing={4} alignItems="stretch">
             <Grid item xs={12} md={8}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
                 <LocalShipping color="primary" />
@@ -878,6 +1091,10 @@ const BookListPage = ({ user }) => {
                   bgcolor: theme.palette.primary.main,
                   color: "white",
                   borderRadius: 2,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
@@ -945,4 +1162,7 @@ const BookListPage = ({ user }) => {
   )
 }
 
-export default BookListPage
+// At the end of the file, change the export
+export default function BookListPageWrapper(props) {
+  return <BookListPage {...props} />
+}
