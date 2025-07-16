@@ -20,6 +20,7 @@ import {
   alpha,
   Avatar,
   Divider,
+  Snackbar,
 } from '@mui/material';
 
 // MUI Icons
@@ -56,6 +57,7 @@ export default function ProfileEditPage({ user, setUser }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -81,8 +83,10 @@ export default function ProfileEditPage({ user, setUser }) {
     setLoading(true);
 
     try {
-      const res = await axios.put(`http://localhost:8080/api/customers/${user.id}`, form);
+      const customerId = user?.customer?.id || user?.id;
+      const res = await axios.put(`http://localhost:8080/api/customers/${customerId}`, form);
       setUser(res.data);
+      setSuccess(true);
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
@@ -443,6 +447,13 @@ export default function ProfileEditPage({ user, setUser }) {
           </Box>
         </Paper>
       </Fade>
+      <Snackbar
+        open={success}
+        autoHideDuration={4000}
+        onClose={() => setSuccess(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        message="Profile updated successfully!"
+      />
     </Box>
   );
 }

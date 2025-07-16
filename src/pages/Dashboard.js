@@ -76,6 +76,7 @@ export default function Dashboard({ user }) {
   const userData = user.customer || user
   const userName = userData.name || userData.username || "User"
   const userContact = userData.contactNo || "Not provided"
+  const accountNumber = userData.accountNumber || "Not assigned"
   const userAddress = userData.address || "Not provided"
   const userProfilePic = userData.profilePicUrl
 
@@ -150,6 +151,19 @@ export default function Dashboard({ user }) {
                 </Box>
 
                 <CardContent sx={{ p: 3 }}>
+
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <Badge sx={{ mr: 2, color: "text.secondary" }} />
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Account ID
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {accountNumber}
+                      </Typography>
+                    </Box>
+                  </Box>
+
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                     <Phone sx={{ mr: 2, color: "text.secondary" }} />
                     <Box>
