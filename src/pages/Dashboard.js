@@ -25,7 +25,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material"
-import { ArrowBack, Edit, ShoppingBag, Receipt, Phone, LocationOn, CalendarToday, School } from "@mui/icons-material"
+import { ArrowBack, Edit, ShoppingBag, Receipt, Phone,Badge, LocationOn, CalendarToday, School } from "@mui/icons-material"
 
 export default function Dashboard({ user }) {
   const [orders, setOrders] = useState([])

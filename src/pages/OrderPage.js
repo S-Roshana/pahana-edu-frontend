@@ -44,6 +44,7 @@ import {
   Receipt,
   Favorite,
   Share,
+  Email,
 } from "@mui/icons-material"
 
 const OrderPage = () => {
@@ -58,6 +59,7 @@ const OrderPage = () => {
     customerName: "",
     customerAddress: "",
     customerContact: "",
+    customerEmail: "",
     quantity: 1,
     paymentMethod: "Cash On Delivery",
   })
@@ -93,6 +95,8 @@ const OrderPage = () => {
     if (!form.customerName.trim()) newErrors.customerName = "Name is required"
     if (!form.customerAddress.trim()) newErrors.customerAddress = "Address is required"
     if (!form.customerContact.trim()) newErrors.customerContact = "Contact is required"
+    if (!form.customerEmail.trim()) newErrors.customerEmail = "Email is required"
+    else if (!/^\S+@\S+\.\S+$/.test(form.customerEmail)) newErrors.customerEmail = "Invalid email address"
     if (form.quantity < 1) newErrors.quantity = "Quantity must be at least 1"
 
     setErrors(newErrors)
@@ -110,6 +114,7 @@ const OrderPage = () => {
       customerName: form.customerName,
       customerAddress: form.customerAddress,
       customerContact: form.customerContact,
+      customerEmail: form.customerEmail,
       quantity: form.quantity,
       totalPrice,
       orderDate: new Date().toISOString(),
@@ -358,6 +363,26 @@ const OrderPage = () => {
                       helperText={errors.customerContact}
                       InputProps={{
                         startAdornment: <Phone color="action" sx={{ mr: 1 }} />,
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Email Address"
+                      name="customerEmail"
+                      value={form.customerEmail}
+                      onChange={handleChange}
+                      error={!!errors.customerEmail}
+                      helperText={errors.customerEmail}
+                      InputProps={{
+                        startAdornment: <Email color="action" sx={{ mr: 1 }} />,
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {

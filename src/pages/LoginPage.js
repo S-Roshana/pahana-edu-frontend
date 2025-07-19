@@ -75,6 +75,8 @@ export default function LoginPage(props) {
 
       if (err.response?.status === 401) {
         setError("Invalid username or password. Please try again.")
+      } else if (err.response?.status === 403) {
+        setError("Your account has been deactivated. Please contact support.")
       } else if (err.response?.status === 500) {
         setError("Server error. Please try again later.")
       } else if (err.code === "NETWORK_ERROR") {

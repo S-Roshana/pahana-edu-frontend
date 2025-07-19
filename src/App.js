@@ -12,6 +12,10 @@ import OrderPage from "./pages/OrderPage"
 import ProfileEditPage from "./pages/ProfileEditPage"
 import AdminLoginPage from "./pages/AdminLoginPage"
 import AdminDashboard from "./pages/AdminDashboard"
+import ManageBooksPage from "./pages/ManageBooksPage";
+import ManageCustomersPage from "./pages/ManageCustomersPage";
+import ViewOrdersPage from "./pages/ViewOrdersPage";
+import BillingPage from "./pages/BillingPage";
 import { jwtDecode } from "jwt-decode";
 import { Snackbar, Alert } from "@mui/material";
 
@@ -197,11 +201,7 @@ function App() {
 
           <Route
             path="/order/:bookId"
-            element={
-              <PrivateRoute user={user}>
-                <OrderPage user={user} />
-              </PrivateRoute>
-            }
+            element={<OrderPage user={user} />}
           />
 
           <Route
@@ -216,6 +216,10 @@ function App() {
               </PrivateAdminRoute>
             }
           />
+          <Route path="/admin/books" element={<ManageBooksPage />} />
+          <Route path="/admin/customers" element={<ManageCustomersPage />} />
+          <Route path="/admin/orders" element={<ViewOrdersPage />} />
+          <Route path="/admin/billing" element={<BillingPage />} />
 
           {/* Catch all route - redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />

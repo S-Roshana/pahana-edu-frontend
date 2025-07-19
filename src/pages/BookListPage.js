@@ -723,11 +723,14 @@ const BookListPage = ({ user: propUser, logout }) => {
             </Badge>
           </Box>
         </Box>
-
+          
+           
+            
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          <Grid container spacing={4}>
+          
+          <Grid container spacing={3}>
             {filteredBooks.map((book, index) => {
               const stockStatus = getStockStatus(book)
               const deliveryTime = getDeliveryTime(book)
@@ -736,11 +739,11 @@ const BookListPage = ({ user: propUser, logout }) => {
               const userRating = userRatings[book.id] || 0
 
               return (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={book.id} sx={{ display: "flex" }}>
+                <Grid item xs={8} sm={6} md={4} lg={3} key={book.id} sx={{ display: "flex" }}>
                   <Grow in timeout={800 + index * 100}>
                     <Card
                       sx={{
-                        height: "100%",
+                        height: 550,
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "space-between",
@@ -748,7 +751,7 @@ const BookListPage = ({ user: propUser, logout }) => {
                         overflow: "hidden",
                         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                        maxWidth: "100%",
+                        maxWidth: "57%",
                         "&:hover": {
                           transform: "translateY(-8px)",
                           boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.15)}`,
@@ -768,13 +771,12 @@ const BookListPage = ({ user: propUser, logout }) => {
                           alt={book.title}
                           className="book-image"
                           sx={{
-                            height: 280,
+                            aspectRatio: "3/3",
                             width: "100%",
-                            objectFit: "contain",
-                            objectPosition: "center",
+                            objectFit: "cover",
+                            objectPosition: "top",
                             backgroundColor: "#f5f5f5",
                             transition: "transform 0.3s ease",
-                            p: 1,
                           }}
                           onError={(e) => {
                             e.target.src = "/placeholder.svg?height=300&width=200"
