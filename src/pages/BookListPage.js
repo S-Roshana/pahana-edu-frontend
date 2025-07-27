@@ -739,7 +739,7 @@ const BookListPage = ({ user: propUser, logout }) => {
               const userRating = userRatings[book.id] || 0
 
               return (
-                <Grid item xs={8} sm={6} md={4} lg={3} key={book.id} sx={{ display: "flex" }}>
+                <Grid item xs={8} sm={6} md={4} lg={3} key={book.id} sx={{ display: "flex", flexDirection: "row" }}>
                   <Grow in timeout={800 + index * 100}>
                     <Card
                       sx={{
@@ -751,37 +751,36 @@ const BookListPage = ({ user: propUser, logout }) => {
                         overflow: "hidden",
                         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                        maxWidth: "57%",
+                        maxWidth: "350px",
                         "&:hover": {
                           transform: "translateY(-8px)",
                           boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.15)}`,
                           "& .book-image": {
                             transform: "scale(1.02)",
                           },
-                          "& .book-overlay": {
-                            opacity: 1,
-                          },
+                         
                         },
                       }}
                     >
-                      <Box sx={{ position: "relative", overflow: "hidden", backgroundColor: "#f8f9fa" }}>
-                        <CardMedia
-                          component="img"
-                          image={book.imageUrl || "/placeholder.svg?height=300&width=200"}
-                          alt={book.title}
-                          className="book-image"
-                          sx={{
-                            aspectRatio: "3/3",
-                            width: "100%",
-                            objectFit: "cover",
-                            objectPosition: "top",
-                            backgroundColor: "#f5f5f5",
-                            transition: "transform 0.3s ease",
-                          }}
-                          onError={(e) => {
-                            e.target.src = "/placeholder.svg?height=300&width=200"
-                          }}
-                        />
+                      <Box sx={{ overflow: "hidden", backgroundColor: "#f8f9fa" }}>
+                      <CardMedia
+                        component="img"
+                        image={book.imageUrl || "/placeholder.svg?height=300&width=200"}
+                        alt={book.title}
+                        className="book-image"
+                        height="400"
+                        sx={{
+                          width: "100%",
+                          objectFit: "cover",
+                          objectPosition: "top",
+                          backgroundColor: "#f5f5f5",
+                          transition: "transform 0.3s ease",
+                        }}
+                        onError={(e) => {
+                          e.target.src = "/placeholder.svg?height=300&width=200";
+                        }}
+                      />
+
                         <Box
                           className="book-overlay"
                           sx={{
@@ -796,22 +795,10 @@ const BookListPage = ({ user: propUser, logout }) => {
                             justifyContent: "center",
                             gap: 1,
                             opacity: 0,
-                            transition: "opacity 0.3s ease",
                             zIndex: 1,
                           }}
                         >
-                          <IconButton
-                            sx={{ color: "white", bgcolor: alpha("#fff", 0.2) }}
-                            onClick={() => navigate(`/book/${book.id}`)}
-                          >
-                            <Visibility />
-                          </IconButton>
-                          <IconButton
-                            sx={{ color: "white", bgcolor: alpha("#fff", 0.2) }}
-                            onClick={() => toggleFavorite(book.id)}
-                          >
-                            {favorites.has(book.id) ? <Favorite /> : <FavoriteBorder />}
-                          </IconButton>
+                         
                         </Box>
 
                         {/* Dynamic badges */}
