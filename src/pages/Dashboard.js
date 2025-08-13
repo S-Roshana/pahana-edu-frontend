@@ -1,8 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react";
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Paper,
@@ -24,42 +31,69 @@ import {
   Fade,
   CircularProgress,
   Alert,
-} from "@mui/material"
-import { ArrowBack, Edit, ShoppingBag, Receipt, Phone,Badge, LocationOn, CalendarToday, School } from "@mui/icons-material"
+  Modal,
+  Snackbar,
+} from "@mui/material";
+import { ArrowBack, Edit, ShoppingBag, Receipt, Phone, Badge, LocationOn, CalendarToday, School } from "@mui/icons-material";
 
 export default function Dashboard({ user }) {
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
-  const theme = useTheme()
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [cancelSuccess, setCancelSuccess] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
+  const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     if (!user) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
-    // Use the correct contact number from user.customer
-    const contactNo = user.customer?.contactNo || user.contactNo
+    const contactNo = user.customer?.contactNo || user.contactNo;
 
     if (contactNo) {
       axios
         .get(`http://localhost:8080/api/orders/byCustomer/${contactNo}`)
         .then((res) => {
-          setOrders(res.data)
-          setLoading(false)
+          setOrders(res.data);
+          setLoading(false);
         })
         .catch((err) => {
-          console.error("Error fetching orders:", err)
-          setError("Failed to load order history")
-          setLoading(false)
-        })
+          console.error("Error fetching orders:", err);
+          setError("Failed to load order history");
+          setLoading(false);
+        });
     } else {
-      setError("Contact number not found")
-      setLoading(false)
+      setError("Contact number not found");
+      setLoading(false);
     }
-  }, [user])
+  }, [user]);
+
+  const handleCancelOrder = (orderId) => {
+    setLoading(true);
+    axios
+      .delete(`http://localhost:8080/api/orders/${orderId}`)
+      .then(() => {
+        setOrders(orders.filter((order) => order.id !== orderId));
+        setCancelOrderId(orderId);
+        setCancelSuccess(true);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error cancelling order:", err);
+        setError("Failed to cancel order");
+        setLoading(false);
+      });
+  };
+
+  const isCancelDisabled = (orderDate) => {
+    const now = new Date();
+    const orderTime = new Date(orderDate);
+    const hoursElapsed = (now - orderTime) / (1000 * 60 * 60); // Convert to hours
+    return hoursElapsed > 4.5; // Disable after 4.5 hours
+  };
 
   if (!user) {
     return (
@@ -69,16 +103,15 @@ export default function Dashboard({ user }) {
           Loading user data...
         </Typography>
       </Container>
-    )
+    );
   }
 
-  // Extract user data from the correct structure
-  const userData = user.customer || user
-  const userName = userData.name || userData.username || "User"
-  const userContact = userData.contactNo || "Not provided"
-  const accountNumber = userData.accountNumber || "Not assigned"
-  const userAddress = userData.address || "Not provided"
-  const userProfilePic = userData.profilePicUrl
+  const userData = user.customer || user;
+  const userName = userData.name || userData.username || "User";
+  const userContact = userData.contactNo || "Not provided";
+  const accountNumber = userData.accountNumber || "Not assigned";
+  const userAddress = userData.address || "Not provided";
+  const userProfilePic = userData.profilePicUrl;
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -102,9 +135,9 @@ export default function Dashboard({ user }) {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4, ml: 1, mr: 1 }}>
         <Fade in timeout={800}>
-          <Grid container spacing={4}>
+          <Grid container spacing={3}>
             {/* Profile Section */}
             <Grid item xs={12} md={4}>
               <Card
@@ -151,8 +184,7 @@ export default function Dashboard({ user }) {
                 </Box>
 
                 <CardContent sx={{ p: 3 }}>
-
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                     <Badge sx={{ mr: 2, color: "text.secondary" }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary">
@@ -209,12 +241,13 @@ export default function Dashboard({ user }) {
             </Grid>
 
             {/* Order History Section */}
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={4} sx={{ mr: -1 }}>
               <Card
                 elevation={0}
                 sx={{
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                   borderRadius: 3,
+                  width:430,
                   height: "fit-content",
                 }}
               >
@@ -269,57 +302,98 @@ export default function Dashboard({ user }) {
                       </Button>
                     </Box>
                   ) : (
-                    <List sx={{ p: 0 }}>
+                    <List>
                       {orders.map((order, index) => (
                         <ListItem
-                          key={order.id}
-                          sx={{
-                            borderBottom: index < orders.length - 1 ? `1px solid ${theme.palette.divider}` : "none",
-                            py: 2,
-                            px: 3,
-                          }}
+                          key={index}
+                          alignItems="flex-start"
+                          sx={{ borderBottom: "1px solid #e0e0e0", mb: 2 }}
                         >
-                          <Box sx={{ width: "100%" }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "flex-start",
-                                mb: 1,
-                              }}
-                            >
-                              <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                                {order.bookTitle}
-                              </Typography>
-                              <Chip
-                                label={`Rs. ${order.totalPrice?.toFixed(2) || "0.00"}`}
-                                color="success"
-                                size="small"
-                                sx={{ fontWeight: "bold" }}
-                              />
-                            </Box>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 2,
-                                flexWrap: "wrap",
-                              }}
-                            >
-                              <Typography variant="body2" color="text.secondary">
-                                Quantity: {order.quantity}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                •
-                              </Typography>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                                <CalendarToday sx={{ fontSize: 16 }} />
-                                <Typography variant="body2" color="text.secondary">
-                                  {new Date(order.orderDate).toLocaleDateString()}
+                          <ListItemAvatar>
+                            <Avatar sx={{ bgcolor: "primary.main" }}>
+                              <LocalShippingIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={
+                              <Box
+                                display="flex"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                mb={1}
+                              >
+                                <Typography variant="h6" component="div">
+                                  Order #{index + 1}
                                 </Typography>
+                                <Box>
+                                  <CalendarToday sx={{ fontSize: 16, mr: 1 }} />
+                                  <Typography variant="body2" color="text.secondary">
+                                    {new Date(order.orderDate).toLocaleDateString()}
+                                  </Typography>
+                                </Box>
                               </Box>
-                            </Box>
-                          </Box>
+                            }
+                            secondary={
+                              <>
+                                {order.items.map((item, i) => (
+                                  <Box key={i} display="flex" alignItems="center" mb={1} ml={1}>
+                                    {item.imageUrl && (
+                                      <img
+                                        src={item.imageUrl}
+                                        alt={item.bookTitle}
+                                        style={{
+                                          width: 50,
+                                          height: 70,
+                                          objectFit: "cover",
+                                          marginRight: 12,
+                                          borderRadius: 4,
+                                        }}
+                                      />
+                                    )}
+                                    <Box>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                                        {item.bookTitle}
+                                      </Typography>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Quantity: {item.quantity} • Price: Rs. {item.price}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                ))}
+                                <Divider sx={{ my: 1 }} />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  align="right"
+                                  fontWeight="bold"
+                                >
+                                  Total Price: Rs. {order.totalPrice}
+                                </Typography>
+                              </>
+                            }
+                          />
+                          <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleCancelOrder(order.id)}
+                            disabled={isCancelDisabled(order.orderDate)}
+                            sx={{
+                              borderRadius: 20,
+                              px: 2,
+                              py: 0.5,
+                              background: "linear-gradient(45deg, #ff4444 30%, #cc0000 90%)",
+                              "&:hover": {
+                                background: "linear-gradient(45deg, #ff6666 30%, #aa0000 90%)",
+                              },
+                              "&:disabled": {
+                                background: alpha("#ff4444", 0.3),
+                                color: alpha("#fff", 0.6),
+                              },
+                            }}
+                          >
+                            Cancel
+                          </Button>
                         </ListItem>
                       ))}
                     </List>
@@ -369,9 +443,88 @@ export default function Dashboard({ user }) {
                 </Grid>
               )}
             </Grid>
+
+            {/* Decorative Cancellation Info Section */}
+            <Grid item xs={12} md={4} sx={{ position: 'relative', top: '-840px', left: '882px' }}>
+              <Card
+                elevation={0}
+                sx={{
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                  borderRadius: 3,
+                  width:570,
+                  height: "fit-content",
+                  background: "linear-gradient(135deg, #e2851aff 0%, #f53b0dff 100%)",
+                  animation: "float 4s ease-in-out infinite",
+                  "@keyframes float": {
+                    "0%, 100%": { transform: "translateY(0)" },
+                    "50%": { transform: "translateY(-10px)" },
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: "center" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: theme.palette.success.main, fontWeight: "bold", mb: 2 }}
+                  >
+                    Cancellation Alert!
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    You can cancel your order and retrieve your credits within{" "}
+                    <strong>4.5 hours</strong> of placing it. Act fast!
+                  </Typography>
+                  <CheckCircleIcon
+                    sx={{ fontSize: 40, color: theme.palette.success.main, mb: 2 }}
+                  />
+            
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={4} sx={{ position: 'relative', top: '-840px', left: '882px' }}>
+              <Card
+                elevation={0}
+                sx={{
+                  border: `1px solid ${alpha('#00FFFF', 0.3)}`, // Neon blue border
+                  borderRadius: 3,
+                  width: 570,
+                  height: "fit-content",
+                  background: "linear-gradient(135deg, #4B0082 0%, #0000FF 100%)", // Purple to blue gradient
+                  color: '#FFFFFF', // White text
+                  animation: "pulse 4s ease-in-out infinite",
+                  "@keyframes pulse": {
+                    "0%, 100%": { transform: "scale(1)" },
+                    "50%": { transform: "scale(1.05)" },
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: "center" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: '#00FFFF', fontWeight: "bold", mb: 2 }} // Neon blue header
+                  >
+                    Shipping Info!
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    After few days placing the order (Approximately 3 or 4 days) shipping will be processed!
+                  </Typography>
+                  <LocalShippingIcon
+                    sx={{ fontSize: 40, color: '#FF00FF', mb: 2 }} // Neon purple icon
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
         </Fade>
       </Container>
+
+      {/* Success Snackbar for Cancellation */}
+      <Snackbar
+        open={cancelSuccess}
+        autoHideDuration={3000}
+        onClose={() => setCancelSuccess(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        message={`Order ${cancelOrderId} cancelled successfully!`}
+      />
     </Box>
-  )
+  );
 }

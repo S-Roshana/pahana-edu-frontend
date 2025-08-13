@@ -214,7 +214,7 @@ const BookListPage = ({ user: propUser, logout }) => {
   // Helper function to get stock status using real quantity
   const getStockStatus = (book) => {
     const quantity = book.quantity || 0
-    if (quantity > 20) return { label: "In Stock", color: "success", available: true }
+    if (quantity > 12) return { label: "In Stock", color: "success", available: true }
     if (quantity > 5) return { label: "Limited Stock", color: "warning", available: true }
     if (quantity > 0) return { label: "Few Left", color: "error", available: true }
     return { label: "Out of Stock", color: "default", available: false }
@@ -573,9 +573,10 @@ const BookListPage = ({ user: propUser, logout }) => {
         </Container>
       </Box>
 
+      <Box>           
       {/* Stats Section - Fixed Alignment */}
-      <Container sx={{ py: 6 }}>
-        <Grid container spacing={4} justifyContent="center" alignItems="stretch">
+      <Container sx={{ py: 6 ,  my: 6}}>
+        <Grid container spacing={6} justifyContent="center" alignItems="stretch">
           <Grid item xs={6} sm={3} md={3}>
             <Paper
               elevation={0}
@@ -697,10 +698,11 @@ const BookListPage = ({ user: propUser, logout }) => {
           </Grid>
         </Grid>
       </Container>
+      </Box> 
 
       {/* Books Section */}
       <Container sx={{ pb: 8 }}>
-        <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 2 }}>
+        <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 3 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
               Featured Books
@@ -768,9 +770,9 @@ const BookListPage = ({ user: propUser, logout }) => {
                         image={book.imageUrl || "/placeholder.svg?height=300&width=200"}
                         alt={book.title}
                         className="book-image"
-                        height="400"
+                        height="300"
                         sx={{
-                          width: "100%",
+                          width: "400",
                           objectFit: "cover",
                           objectPosition: "top",
                           backgroundColor: "#f5f5f5",
@@ -1071,42 +1073,44 @@ const BookListPage = ({ user: propUser, logout }) => {
                 📦 Free delivery on orders above Rs. 2000 | Island-wide delivery within 3-5 working days
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper
-                elevation={0}
+            <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+            <Paper
+              elevation={0}
+              sx={{
+                ml:20,
+                p: 3,
+                textAlign: "center",
+                bgcolor: theme.palette.primary.main,
+                color: "white",
+                borderRadius: 2,
+                flexGrow: 1, // Allow it to fill the Grid height
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+                Need Help?
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Contact our support team
+              </Typography>
+              <Button
+                variant="outlined"
                 sx={{
-                  p: 3,
-                  textAlign: "center",
-                  bgcolor: theme.palette.primary.main,
                   color: "white",
-                  borderRadius: 2,
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
+                  borderColor: "white",
+                  "&:hover": {
+                    bgcolor: alpha("#fff", 0.1),
+                    borderColor: "white",
+                  },
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-                  Need Help?
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Contact our support team
-                </Typography>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    color: "white",
-                    borderColor: "white",
-                    "&:hover": {
-                      bgcolor: alpha("#fff", 0.1),
-                      borderColor: "white",
-                    },
-                  }}
-                >
-                  Get Support
-                </Button>
-              </Paper>
-            </Grid>
+                Get Support
+              </Button>
+            </Paper>
+          </Grid>
+
           </Grid>
           <Divider sx={{ my: 3 }} />
           <Typography variant="body2" color="text.secondary" textAlign="center">

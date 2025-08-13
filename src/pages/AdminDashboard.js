@@ -184,15 +184,24 @@ function AdminDashboard({ admin, logoutAdmin }) {
   });
 
   // Top 5 selling books
-  const bookSales = {};
-  orders.forEach(order => {
-    if (order.bookTitle) {
-      bookSales[order.bookTitle] = (bookSales[order.bookTitle] || 0) + (order.quantity || 0);
-    }
-  });
-  const topBooks = Object.entries(bookSales)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+const bookSales = {};
+
+orders.forEach(order => {
+  if (order.items && Array.isArray(order.items)) {
+    order.items.forEach(item => {
+      const title = item.bookTitle;
+      const quantity = item.quantity || 0;
+
+      if (title) {
+        bookSales[title] = (bookSales[title] || 0) + quantity;
+      }
+    });
+  }
+});
+
+const topBooks = Object.entries(bookSales)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 5);
 
   // --- Section Renderers ---
   const renderHome = () => (

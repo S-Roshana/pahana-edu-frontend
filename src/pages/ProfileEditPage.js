@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
+
 // MUI Components
 import {
   Box,
@@ -38,9 +40,12 @@ import {
   Save,
 } from '@mui/icons-material';
 
+const jwtDecode = typeof window !== 'undefined' ? require('jwt-decode') : null;
+
 export default function ProfileEditPage({ user, setUser }) {
   const navigate = useNavigate();
   const theme = useTheme();
+  
 
   // Form state
   const [form, setForm] = useState({
@@ -59,17 +64,19 @@ export default function ProfileEditPage({ user, setUser }) {
   const [isVisible, setIsVisible] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
+  // Update form state whenever user prop changes
+useEffect(() => {
     setIsVisible(true);
-    if (user) {
+    if (user && user.customer) { // Use user.customer since login returns { customer, token, role }
       setForm({
-        name: user.name || '',
-        contactNo: user.contactNo || '',
-        address: user.address || '',
-        profilePicUrl: user.profilePicUrl || '',
-        username: user.username || '',
-        password: user.password || '',
+        name: user.customer.name || '',
+        contactNo: user.customer.contactNo || '',
+        address: user.customer.address || '',
+        username: user.customer.username || '',
+        password: '', // Do not pre-fill password for security
       });
+    } else {
+      setSuccess('Please log in again.');
     }
   }, [user]);
 
@@ -87,7 +94,12 @@ export default function ProfileEditPage({ user, setUser }) {
       const res = await axios.put(`http://localhost:8080/api/customers/${customerId}`, form);
       setUser(res.data);
       setSuccess(true);
-      navigate('/dashboard');
+      // Delay redirection to show success message for 5 seconds
+      setTimeout(() => {
+        localStorage.removeItem('token'); // Adjust based on your storage
+        setUser(null);
+        navigate('/login');
+      }, 5000); // 5000 milliseconds = 5 seconds
     } catch (err) {
       console.error(err);
       setError('Failed to update profile. Please try again.');
@@ -289,7 +301,6 @@ export default function ProfileEditPage({ user, setUser }) {
               type={showPassword ? 'text' : 'password'}
               value={form.password}
               onChange={handleChange}
-              required
               fullWidth
               InputProps={{
                 startAdornment: (
@@ -370,28 +381,7 @@ export default function ProfileEditPage({ user, setUser }) {
             />
 
             {/* Profile Picture URL */}
-            <TextField
-              name="profilePicUrl"
-              label="Profile Picture URL"
-              value={form.profilePicUrl}
-              onChange={handleChange}
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Avatar sx={{ width: 24, height: 24 }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  '&:hover fieldset': {
-                    borderColor: theme.palette.primary.main,
-                  },
-                },
-              }}
-            />
+
 
             {/* Submit Button */}
             <Button

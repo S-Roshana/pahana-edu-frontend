@@ -123,6 +123,7 @@ function BillingPage() {
       }
       setOpenCreate(false);
     } catch (e) {
+      console.error("Bill processing error:", e);
       setSnackbar({ open: true, message: 'Failed to process bill', severity: 'error' });
     } finally {
       setPdfLoading(false);
