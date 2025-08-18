@@ -13,6 +13,16 @@ const NEON_ACCENT2 = "#f7971e";
 const NEON_ACCENT3 = "#43e97b";
 const NEON_ACCENT4 = "#764ba2";
 
+// Assume token is stored in localStorage after login
+const getToken = () => {
+  const adminData = JSON.parse(localStorage.getItem("admin"));
+  return adminData?.token || null;
+};
+const setToken = (token, adminData) => {
+  const updatedAdmin = { ...adminData, token };
+  localStorage.setItem("admin", JSON.stringify(updatedAdmin));
+};
+
 function ManageBooksPage() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,14 +35,17 @@ function ManageBooksPage() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
 
-  // Fetch books
+  // Fetch books (no authentication required)
   const fetchBooks = () => {
     setLoading(true);
     axios.get("http://localhost:8080/api/books")
       .then(res => setBooks(res.data))
-      .catch(() => setSnackbar({ open: true, message: 'Failed to fetch books', severity: 'error' }))
+      .catch(err => {
+        setSnackbar({ open: true, message: 'Failed to fetch books', severity: 'error' });
+      })
       .finally(() => setLoading(false));
   };
+
   useEffect(fetchBooks, []);
 
   // Handlers
@@ -41,21 +54,62 @@ function ManageBooksPage() {
   const handleOpenDelete = (book) => { setSelectedBook(book); setOpenDelete(true); };
   const handleCloseDialogs = () => { setOpenAdd(false); setOpenEdit(false); setOpenDelete(false); setSelectedBook(null); };
 
-  // CRUD
+  // CRUD with authentication
   const handleAdd = () => {
-    axios.post("http://localhost:8080/api/books", { ...form, price: Number(form.price), quantity: Number(form.quantity) })
+    const token = getToken();
+    if (!token) {
+      setSnackbar({ open: true, message: 'Please log in as admin to add books', severity: 'error' });
+      return;
+    }
+    axios.post("http://localhost:8080/api/books", { ...form, price: Number(form.price), quantity: Number(form.quantity) }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(() => { setSnackbar({ open: true, message: 'Book added!', severity: 'success' }); fetchBooks(); setOpenAdd(false); })
-      .catch(() => setSnackbar({ open: true, message: 'Failed to add book', severity: 'error' }));
+      .catch(err => {
+        if (err.response?.status === 403) {
+          setSnackbar({ open: true, message: 'Unauthorized access. Admin role required.', severity: 'error' });
+        } else {
+          setSnackbar({ open: true, message: 'Failed to add book', severity: 'error' });
+        }
+      });
   };
+
   const handleEdit = () => {
-    axios.put(`http://localhost:8080/api/books/${selectedBook.id}`, { ...form, price: Number(form.price), quantity: Number(form.quantity) })
+    const token = getToken();
+    if (!token) {
+      setSnackbar({ open: true, message: 'Please log in as admin to edit books', severity: 'error' });
+      return;
+    }
+    axios.put(`http://localhost:8080/api/books/${selectedBook.id}`, { ...form, price: Number(form.price), quantity: Number(form.quantity) }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(() => { setSnackbar({ open: true, message: 'Book updated!', severity: 'success' }); fetchBooks(); setOpenEdit(false); })
-      .catch(() => setSnackbar({ open: true, message: 'Failed to update book', severity: 'error' }));
+      .catch(err => {
+        if (err.response?.status === 403) {
+          setSnackbar({ open: true, message: 'Unauthorized access. Admin role required.', severity: 'error' });
+        } else {
+          setSnackbar({ open: true, message: 'Failed to update book', severity: 'error' });
+        }
+      });
   };
+
   const handleDelete = () => {
-    axios.delete(`http://localhost:8080/api/books/${selectedBook.id}`)
+    const token = getToken();
+    if (!token) {
+      setSnackbar({ open: true, message: 'Please log in as admin to delete books', severity: 'error' });
+      return;
+    }
+    axios.delete(`http://localhost:8080/api/books/${selectedBook.id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(() => { setSnackbar({ open: true, message: 'Book deleted!', severity: 'success' }); fetchBooks(); setOpenDelete(false); })
-      .catch(() => setSnackbar({ open: true, message: 'Failed to delete book', severity: 'error' }));
+      .catch(err => {
+        if (err.response?.status === 403) {
+          setSnackbar({ open: true, message: 'Unauthorized access. Admin role required.', severity: 'error' });
+        } else {
+          setSnackbar({ open: true, message: 'Failed to delete book', severity: 'error' });
+        }
+      });
   };
 
   // Image upload handler
@@ -213,4 +267,4 @@ function ManageBooksPage() {
   );
 }
 
-export default ManageBooksPage; 
+export default ManageBooksPage;

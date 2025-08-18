@@ -122,7 +122,7 @@ function ViewOrdersPage() {
       filterable: false,
       renderCell: (params) => (
         <FormControl fullWidth size="small">
-          <InputLabel id="status-select-label">Update Status</InputLabel>
+          <InputLabel id="status-select-label" sx={{ bgcolor: NEON_CARD, color: '#fff' }}>Update Status</InputLabel>
           <Select
             labelId="status-select-label"
             label="Update Status"
