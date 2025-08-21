@@ -33,9 +33,15 @@ Open http://localhost:3000 to view in the browser.
 📂 Project Structure
 pahana-edu-frontend/
 │── public/              # Static assets
+
 │── src/
+
 │   ├── pages/           # Page components (Home, Login, Dashboard, etc.)
+
 │   ├── App.css          # Global css
+
 │   ├── App.js           # Main app container
+
 │   ├── index.js         # Entry point
+
 │── package.json         # Project configuration
