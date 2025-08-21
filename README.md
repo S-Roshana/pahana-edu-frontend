@@ -15,10 +15,12 @@ npm or yarn package manager
 
 2️⃣ Installation
 
-Clone the repository and install dependencies:
+**Clone the repository and install dependencies:
 
 git clone https://github.com/your-username/pahana-edu-frontend.git
-cd pahana-edu-frontend
+
+cd pahana-edu-frontend**
+
 npm install
 
 3️⃣ Running the Development Server
